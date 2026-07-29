@@ -388,7 +388,6 @@
 
 <div class="container">
     <div class="game-panel">
-        <!-- تم تعديل اسم الموقع هنا -->
         <div class="header-logo">
             ♟️ المشد عمك يا كلب
             <span class="diamond-badge">💎 VIP</span>
@@ -482,9 +481,9 @@
             </div>
         </div>
 
-        <!-- 🏆 لوحة المتصدرين -->
+        <!-- 🏆 لوحة المتصدرين (اللاعبون الحقيقيون فقط) -->
         <div class="card">
-            <h3>🏆 أفضل اللاعبين (Leaderboard)</h3>
+            <h3>🏆 اللاعبون المسجلون (Leaderboard)</h3>
             <table class="leaderboard-table">
                 <thead>
                     <tr>
@@ -590,41 +589,62 @@
         localStorage.setItem('chess_diamond_elo', playerELO);
         updateLeaderboard();
     }
-    updateRankTitle();
 
     function saveUsername() {
         const val = document.getElementById('username-input').value.trim();
         if (val) {
+            let oldName = userName;
             userName = val;
             localStorage.setItem('chess_diamond_user', userName);
             document.getElementById('player-display-name').innerText = userName;
+
+            // تحديث الاسم في سجل المستخدمين الحقيقيين
+            let registeredUsers = JSON.parse(localStorage.getItem('chess_registered_users')) || {};
+            if (registeredUsers[oldName]) {
+                delete registeredUsers[oldName];
+            }
+            registeredUsers[userName] = { elo: playerELO, wins: playerStats.wins, losses: playerStats.losses };
+            localStorage.setItem('chess_registered_users', JSON.stringify(registeredUsers));
+
             initPeer();
+            updateLeaderboard();
         }
     }
 
+    /* --- 🏆 إدارة قائمة المتصدرين (لاعبين حقيقيين فقط) --- */
     function updateLeaderboard() {
-        let defaultBoard = [
-            { name: userName, elo: playerELO, wins: playerStats.wins, losses: playerStats.losses },
-            { name: "Magnus_Bot", elo: 2800, wins: 150, losses: 10 },
-            { name: "Hikaru_Pro", elo: 2750, wins: 140, losses: 15 },
-            { name: "Stockfish_AI", elo: 2100, wins: 95, losses: 20 }
-        ];
+        let registeredUsers = JSON.parse(localStorage.getItem('chess_registered_users')) || {};
+        
+        // حفظ المستخدم الحالي تلقائياً
+        registeredUsers[userName] = { elo: playerELO, wins: playerStats.wins, losses: playerStats.losses };
+        localStorage.setItem('chess_registered_users', JSON.stringify(registeredUsers));
 
-        defaultBoard.sort((a, b) => b.elo - a.elo);
+        let usersArray = Object.keys(registeredUsers).map(name => {
+            return {
+                name: name,
+                elo: registeredUsers[name].elo,
+                wins: registeredUsers[name].wins,
+                losses: registeredUsers[name].losses
+            };
+        });
+
+        // ترتيب الحسابات حسب Elo من الأعلى إلى الأقل
+        usersArray.sort((a, b) => b.elo - a.elo);
 
         const tbody = document.getElementById('leaderboard-body');
         tbody.innerHTML = '';
-        defaultBoard.forEach((player, idx) => {
+        usersArray.forEach((player, idx) => {
             let tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>#${idx + 1}</td>
-                <td><b>${player.name}</b></td>
+                <td><b>${player.name}</b> ${player.name === userName ? '<span style="color:var(--accent-diamond)">(أنت)</span>' : ''}</td>
                 <td>${player.elo}</td>
                 <td>${player.wins}/${player.losses}</td>
             `;
             tbody.appendChild(tr);
         });
     }
+    updateRankTitle();
 
     /* --- إدارة التوقيت --- */
     function startTimer() {
@@ -698,6 +718,15 @@
     }
     initPeer();
 
+    function registerOpponent(name, elo) {
+        let registeredUsers = JSON.parse(localStorage.getItem('chess_registered_users')) || {};
+        if (!registeredUsers[name]) {
+            registeredUsers[name] = { elo: elo || 1000, wins: 0, losses: 0 };
+            localStorage.setItem('chess_registered_users', JSON.stringify(registeredUsers));
+            updateLeaderboard();
+        }
+    }
+
     function setupPeerListeners() {
         conn.on('open', () => {
             conn.send({ type: 'handshake', name: userName, elo: playerELO });
@@ -709,6 +738,7 @@
                 document.getElementById('opponent-elo').innerText = data.elo;
                 document.getElementById('opponent-avatar').innerText = "👤";
                 document.getElementById('game-status').innerText = `متصل أونلاين ضد: ${data.name}`;
+                registerOpponent(data.name, data.elo);
                 startTimer();
             } else if (data.move) {
                 const moveResult = game.move(data.move);
@@ -779,7 +809,6 @@
         boardElement.innerHTML = '';
         const displayGame = customFen ? new Chess(customFen) : game;
 
-        // إيجاد مربع الملك الذي تحت الكش إن وجد
         let kingInCheckSquare = null;
         if (displayGame.in_check()) {
             kingInCheckSquare = findKingSquare(displayGame, displayGame.turn());
@@ -799,7 +828,6 @@
 
                 if (lastMoveSquares.includes(squareName)) square.classList.add('last-move');
                 
-                // 🟥 إضاءة الملك باللون الأحمر في حالة الكش
                 if (squareName === kingInCheckSquare) {
                     square.classList.add('in-check');
                 }
