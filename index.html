@@ -3,51 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>بوكسر سعيد العربي | Grandmaster Edition</title>
+    <title>Chess.com VIP Review & Custom Edition</title>
     <!-- مكتبة قواعد الشطرنج -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
-    <!-- مكتبة التوصيل الأونلاين PeerJS -->
+    <!-- مكتبة اتصال أونلاين PeerJS -->
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <!-- مكتبة الاحتفالات Confetti -->
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
     <style>
         :root {
-            --bg-main: #0b0705;
-            --panel-bg: #1a0f08;
-            --border-color: #b8860b;
-            --accent-gold: #ffd700;
-            --text-light: #fdf6e3;
-            --board-dark: #b58863;
-            --board-light: #f0d9b5;
-            --highlight: rgba(255, 215, 0, 0.7);
-            --last-move: rgba(46, 204, 113, 0.6);
+            /* ثيم Chess.com VIP Diamond */
+            --bg-main: #161512;
+            --panel-bg: #21201d;
+            --panel-card: #2b2925;
+            --accent-diamond: #00d2ff;
+            --accent-green: #81b64c;
+            --accent-green-hover: #a3d168;
+            --border-color: #3b3833;
+            --text-light: #ffffff;
+            --text-muted: #a09d98;
+            
+            /* ألوان اللوحة الافتراضية */
+            --board-dark: #769656;
+            --board-light: #eeeed2;
+            --highlight: rgba(255, 255, 51, 0.5);
+            --last-move: rgba(245, 246, 130, 0.85);
         }
 
-        /* 10 ثيمات متنوعة */
-        body.theme-gold { --board-dark: #b58863; --board-light: #f0d9b5; --border-color: #b8860b; --bg-main: #0b0705; }
-        body.theme-wood { --board-dark: #8b5a2b; --board-light: #cd853f; --border-color: #d2691e; --bg-main: #140c07; }
-        body.theme-neon { --board-dark: #1f1f38; --board-light: #3a3a68; --border-color: #00e5ff; --accent-gold: #00e5ff; --bg-main: #050510; }
-        body.theme-marble { --board-dark: #708090; --board-light: #e6e6fa; --border-color: #778899; --bg-main: #0f1419; }
-        body.theme-emerald { --board-dark: #2e8b57; --board-light: #a2d9ce; --border-color: #27ae60; --bg-main: #04120a; }
-        body.theme-orange { --board-dark: #d35400; --board-light: #f5cba7; --border-color: #e67e22; --bg-main: #170800; }
-        body.theme-darknight { --board-dark: #2c3e50; --board-light: #7f8c8d; --border-color: #34495e; --bg-main: #080c10; }
-        body.theme-pink { --board-dark: #c2185b; --board-light: #f8bbd0; --border-color: #e91e63; --bg-main: #120308; }
-        body.theme-ocean { --board-dark: #1565c0; --board-light: #90caf9; --border-color: #1e88e5; --bg-main: #020b14; }
-        body.theme-metal { --board-dark: #424242; --board-light: #e0e0e0; --border-color: #9e9e9e; --bg-main: #121212; }
+        /* ثيمات مختلفة لرقع الشطرنج */
+        body.theme-gold { --board-dark: #b8860b; --board-light: #f5deb3; }
+        body.theme-ocean { --board-dark: #4682b4; --board-light: #e0f7fa; }
+        body.theme-neon { --board-dark: #2a085c; --board-light: #00f0ff; }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             touch-action: manipulation;
         }
 
         body {
             background-color: var(--bg-main);
-            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
-            background-size: 20px 20px;
             color: var(--text-light);
             display: flex;
             justify-content: center;
@@ -60,65 +58,58 @@
         .container {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
-            max-width: 1400px;
+            gap: 20px;
+            max-width: 1280px;
             width: 100%;
             justify-content: center;
-            transition: all 0.3s ease;
+            align-items: flex-start;
         }
 
-        /* وضع التركيز وتكبير الشاشة أثناء لعب الصديق */
-        body.focus-mode .sidebar {
-            display: none !important;
-        }
-        body.focus-mode .container {
-            max-width: 800px;
-        }
-        body.focus-mode #chessboard, body.focus-mode #arrow-canvas {
-            width: 560px;
-            height: 560px;
-        }
-        body.focus-mode #chessboard {
-            grid-template-columns: repeat(8, 70px);
-            grid-template-rows: repeat(8, 70px);
-        }
-        body.focus-mode .square {
-            width: 70px;
-            height: 70px;
-            font-size: 50px;
-        }
-        body.focus-mode .eval-bar-container {
-            height: 560px;
-        }
+        /* وضع التركيز */
+        body.focus-mode .sidebar { display: none !important; }
+        body.focus-mode .container { max-width: 780px; }
+        body.focus-mode #chessboard { width: 580px; height: 580px; grid-template-columns: repeat(8, 72.5px); grid-template-rows: repeat(8, 72.5px); }
+        body.focus-mode .square { width: 72.5px; height: 72.5px; font-size: 54px; }
+        body.focus-mode .eval-bar-container { height: 580px; }
 
         .game-panel {
-            background: linear-gradient(145deg, #1c0f08, #0e0704);
-            border: 3px solid var(--border-color);
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.95);
-            padding: 15px;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
         }
 
-        .header h1 {
-            color: var(--accent-gold);
+        .header-logo {
             font-size: 22px;
-            text-align: center;
-            margin-bottom: 4px;
+            font-weight: 900;
+            color: #fff;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .opening-tag {
-            color: var(--accent-gold);
-            font-size: 12px;
-            margin-bottom: 8px;
-            font-style: italic;
-            background: rgba(0,0,0,0.5);
-            padding: 3px 12px;
+        .diamond-badge {
+            background: linear-gradient(135deg, #00d2ff, #0082c8);
+            color: #000;
+            font-size: 11px;
+            font-weight: 900;
+            padding: 2px 8px;
             border-radius: 12px;
-            border: 1px solid var(--border-color);
+        }
+
+        .user-title-badge {
+            background: #e67e22;
+            color: #fff;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 4px;
         }
 
         .player-profile {
@@ -126,71 +117,74 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            margin: 4px 0;
-            background: #090402;
-            padding: 6px 12px;
-            border-radius: 8px;
+            margin: 6px 0;
+            background: var(--panel-card);
+            padding: 8px 12px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
-            font-size: 13px;
         }
 
-        .rank-badge {
-            background: rgba(255,215,0,0.15);
-            color: var(--accent-gold);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: bold;
+        .player-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            background: #383531;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: 1px solid var(--border-color);
         }
 
         .clock {
-            background: #120000;
-            color: #ff3333;
-            border: 2px solid #8b0000;
+            background: #191816;
+            color: #fff;
             font-family: monospace;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: bold;
-            padding: 2px 10px;
-            border-radius: 6px;
+            padding: 4px 14px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
         }
 
-        .clock.active {
-            color: #00ff66;
-            border-color: #00aa44;
-        }
+        .clock.active { background: #ffffff; color: #000000; }
 
         .board-wrapper {
             display: flex;
-            gap: 10px;
+            gap: 12px;
             align-items: center;
-            position: relative;
         }
 
         .eval-bar-container {
-            width: 16px;
+            width: 14px;
             height: 480px;
-            background: #111;
-            border: 2px solid var(--border-color);
-            border-radius: 6px;
+            background: #2b2925;
+            border-radius: 4px;
             display: flex;
             flex-direction: column;
             justify-content: flex-end;
             overflow: hidden;
-            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
         }
 
         .eval-bar-fill {
             width: 100%;
-            background: linear-gradient(to top, #ffffff, #ddd);
+            background: #ffffff;
             height: 50%;
-            transition: height 0.4s ease-in-out;
+            transition: height 0.4s ease;
         }
 
         .board-container {
-            border: 10px solid var(--panel-bg);
-            border-radius: 8px;
-            box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
             position: relative;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.6);
         }
 
         #chessboard {
@@ -200,19 +194,6 @@
             width: 480px;
             height: 480px;
             user-select: none;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        #arrow-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 480px;
-            height: 480px;
-            pointer-events: none;
-            z-index: 20;
-            transition: all 0.3s ease;
         }
 
         .square {
@@ -221,10 +202,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 42px;
-            cursor: grab;
+            font-size: 44px;
+            cursor: pointer;
             position: relative;
-            transition: all 0.3s ease;
         }
 
         .square.white { background-color: var(--board-light); }
@@ -232,126 +212,141 @@
         .square.selected { background-color: var(--highlight) !important; }
         .square.last-move { background-color: var(--last-move) !important; }
 
-        /* تحسين إبراز ألوان القطع الشديد */
+        /* أنماط أشكال القطع */
         .piece-element {
-            transition: transform 0.2s ease-in-out;
-            display: inline-block;
             font-weight: bold;
+            line-height: 1;
+            z-index: 1;
+            transition: transform 0.1s;
         }
         .piece-element.white-piece {
             color: #ffffff !important;
-            filter: drop-shadow(0px 0px 3px #000000) drop-shadow(0px 2px 5px rgba(0,0,0,0.8));
+            filter: drop-shadow(0px 0px 2px #000) drop-shadow(0px 2px 4px rgba(0,0,0,0.8));
         }
         .piece-element.black-piece {
             color: #111111 !important;
-            filter: drop-shadow(0px 0px 2px #ffffff) drop-shadow(0px 2px 5px rgba(0,0,0,0.9));
+            filter: drop-shadow(0px 0px 1px #fff) drop-shadow(0px 2px 4px rgba(0,0,0,0.9));
         }
+
+        /* ثيم قطعة ضخمة Bold */
+        body.piece-bold .piece-element { font-size: 48px; font-weight: 900; }
+        /* ثيم قطعة حديثة Modern */
+        body.piece-modern .piece-element { font-family: 'Courier New', monospace; font-size: 42px; }
+
+        /* شارة التقييم المباشرة */
+        .move-badge-icon {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 15px;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.75);
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: badgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes badgePop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
 
         .square.possible-move::after {
             content: '';
             width: 16px;
             height: 16px;
-            background: rgba(0, 0, 0, 0.35);
+            background: rgba(0, 0, 0, 0.25);
             border-radius: 50%;
             position: absolute;
         }
 
-        .captured-pieces {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 18px;
-            min-height: 28px;
-            background: #080402;
-            padding: 2px 10px;
-            border-radius: 6px;
-            width: 100%;
-            border: 1px solid var(--border-color);
-        }
-
         .sidebar {
             flex: 1;
-            min-width: 330px;
-            max-width: 420px;
+            min-width: 320px;
+            max-width: 380px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .card {
-            background: linear-gradient(145deg, #180c06, #0f0703);
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            padding: 10px 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        .card h3 {
-            color: var(--accent-gold);
-            margin-bottom: 6px;
-            border-bottom: 1px dashed var(--border-color);
-            padding-bottom: 4px;
-            font-size: 14px;
-        }
+        .card h3 { color: var(--text-light); font-size: 14px; margin-bottom: 8px; }
 
-        .btn {
-            background: linear-gradient(to bottom, #a37c4c, #4a2e19);
-            color: var(--text-light);
-            border: 1px solid var(--accent-gold);
-            padding: 7px 10px;
+        .btn-green {
+            background-color: var(--accent-green);
+            color: #fff;
+            border: none;
+            padding: 10px 14px;
             border-radius: 6px;
-            cursor: pointer;
             font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
             width: 100%;
-            margin-top: 4px;
-            transition: 0.2s;
-            font-size: 12px;
+            transition: filter 0.2s;
         }
 
-        .btn:hover { 
-            background: linear-gradient(to bottom, #b8860b, #6e4423);
+        .btn-green:hover { filter: brightness(1.1); }
+
+        .btn-dark {
+            background-color: var(--panel-card);
+            color: var(--text-light);
+            border: 1px solid var(--border-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
         }
 
         input, select {
             width: 100%;
-            padding: 6px;
-            background: #090402;
+            padding: 8px 10px;
+            background: var(--panel-card);
             border: 1px solid var(--border-color);
             color: var(--text-light);
-            border-radius: 5px;
-            margin-bottom: 4px;
-            font-size: 12px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 13px;
         }
 
         #move-log {
-            height: 70px;
+            height: 80px;
             overflow-y: auto;
-            background: #090402;
-            border: 1px solid var(--border-color);
-            padding: 6px;
-            font-family: monospace;
-            font-size: 11px;
-            border-radius: 4px;
-        }
-
-        .stats-badge-container {
-            display: flex;
-            justify-content: space-around;
-            background: #090402;
-            padding: 6px;
+            background: var(--panel-card);
             border-radius: 6px;
+            padding: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            color: var(--text-muted);
             border: 1px solid var(--border-color);
-            font-size: 11px;
-            text-align: center;
         }
 
-        .stats-val {
-            font-size: 14px;
-            font-weight: bold;
-            color: var(--accent-gold);
+        .review-controls {
+            display: flex;
+            gap: 4px;
+            margin-top: 6px;
+        }
+        .review-controls button {
+            flex: 1;
+            padding: 8px;
+            font-size: 16px;
+            background: var(--panel-card);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
-        /* نافذة التنبيه والتحليل المتقدمة */
+        /* نافذة النهاية */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -362,48 +357,43 @@
             align-items: center;
         }
         .modal-card {
-            background: #1c0f08;
-            border: 3px solid var(--accent-gold);
+            background: var(--panel-bg);
+            border: 2px solid var(--accent-diamond);
             border-radius: 12px;
             padding: 20px;
-            max-width: 450px;
+            max-width: 440px;
             width: 90%;
             text-align: center;
-            box-shadow: 0 0 25px rgba(255,215,0,0.4);
         }
-        .modal-card h2 { color: var(--accent-gold); margin-bottom: 10px; }
-        .modal-card p { margin-bottom: 15px; font-size: 14px; }
 
         @media (max-width: 900px) {
-            #chessboard, #arrow-canvas { width: 304px; height: 304px; }
-            #chessboard { grid-template-columns: repeat(8, 38px); grid-template-rows: repeat(8, 38px); }
-            .square { width: 38px; height: 38px; font-size: 26px; }
-            .eval-bar-container { height: 304px; }
-            .container { padding: 5px; }
-            .game-panel { padding: 10px; }
+            #chessboard { width: 320px; height: 320px; grid-template-columns: repeat(8, 40px); grid-template-rows: repeat(8, 40px); }
+            .square { width: 40px; height: 40px; font-size: 28px; }
+            .eval-bar-container { height: 320px; }
+            .sidebar { width: 100%; max-width: 100%; }
         }
     </style>
 </head>
-<body class="theme-gold">
+<body>
 
 <div class="container">
     <!-- اللوحة الرئيسية -->
-    <div class="game-panel" id="main-panel">
-        <div class="header">
-            <h1>🥊 بوكسر سعيد العربي</h1>
+    <div class="game-panel">
+        <div class="header-logo">
+            ♟️ Chess<span style="color:var(--accent-green);">.com</span>
+            <span class="diamond-badge">💎 DIAMOND</span>
         </div>
 
-        <div class="opening-tag" id="opening-name">الافتتاحية: بداية المباراة</div>
-
-        <!-- الخصم -->
+        <!-- المنافس -->
         <div class="player-profile">
-            <div>الخصم: <strong id="black-name">الكمبيوتر</strong> | ELO: <span id="opponent-elo" style="color:var(--accent-gold); font-weight:bold;">1500</span></div>
+            <div class="player-info">
+                <div class="avatar">🤖</div>
+                <div>
+                    <strong id="black-name">الكمبيوتر</strong>
+                    <div style="font-size: 11px; color: var(--text-muted);">ELO: <span id="opponent-elo">300</span></div>
+                </div>
+            </div>
             <div class="clock" id="black-timer">10:00</div>
-        </div>
-
-        <div class="captured-pieces">
-            <span id="captured-black"></span>
-            <span class="advantage-badge" id="adv-black"></span>
         </div>
 
         <div class="board-wrapper">
@@ -413,270 +403,202 @@
 
             <div class="board-container">
                 <div id="chessboard"></div>
-                <canvas id="arrow-canvas" width="480" height="480"></canvas>
             </div>
-        </div>
-
-        <div class="captured-pieces">
-            <span id="captured-white"></span>
-            <span class="advantage-badge" id="adv-white"></span>
         </div>
 
         <!-- اللاعب -->
         <div class="player-profile">
-            <div>اللاعب: <strong id="player-display-name">أنت</strong> | الرتبة: <span class="rank-badge" id="player-rank">مبتدئ 🥉</span></div>
-            <div>ELO: <span id="player-elo" style="color:var(--accent-gold); font-weight:bold;">200</span></div>
+            <div class="player-info">
+                <div class="avatar" style="background: var(--accent-green); color: #000;">👤</div>
+                <div>
+                    <span id="player-title" class="user-title-badge">مبتدئ</span>
+                    <strong id="player-display-name">أنت</strong>
+                    <div style="font-size: 11px; color: var(--text-muted);">ELO: <span id="player-elo">200</span></div>
+                </div>
+            </div>
             <div class="clock active" id="white-timer">10:00</div>
         </div>
 
-        <div style="margin-top: 6px; text-align: center; width: 100%; display: flex; gap: 5px;">
-            <p id="game-status" style="font-weight: bold; color: var(--accent-gold); flex: 1;">أهلاً بك - اختر النمط وابدأ اللعب</p>
-            <button id="exit-focus-btn" class="btn" style="display:none; width: auto; padding: 4px 10px; margin: 0; background: #922b21;" onclick="exitFocusMode()">❌ خروج من الشاشة الكبيرة</button>
+        <div style="margin-top: 8px; width: 100%; display: flex; gap: 5px; align-items: center;">
+            <p id="game-status" style="font-size: 12px; color: var(--accent-diamond); font-weight: bold; flex: 1;">اختر نمط اللعب للبدء</p>
+            <button id="exit-focus-btn" class="btn-dark" style="display:none; width: auto; background: #c0392b; margin:0;" onclick="exitFocusMode()">إلغاء وضع التركيز ❌</button>
         </div>
     </div>
 
-    <!-- اللوحة الجانبية -->
+    <!-- الشريط الجانبي -->
     <div class="sidebar">
 
-        <!-- 👤 الحساب والاسم -->
+        <!-- 👤 اسم اللاعب واللقب -->
         <div class="card">
-            <h3>👤 حسابك في بوكسر سعيد العربي</h3>
-            <div style="display:flex; gap:4px;">
-                <input type="text" id="username-input" placeholder="أدخل اسمك هنا..." style="margin:0;">
-                <button class="btn" onclick="saveUsername()" style="margin:0; width:35%;">حفظ</button>
+            <h3>👤 تخصيص اسم اللاعب</h3>
+            <div style="display: flex; gap: 4px;">
+                <input type="text" id="username-input" placeholder="اسمك..." style="margin:0;">
+                <button class="btn-dark" onclick="saveUsername()" style="margin:0; width: 35%;">تحديث</button>
             </div>
         </div>
 
-        <!-- 🌐 البحث عن صديق والدعوة السريعة -->
+        <!-- 🎨 ثيمات الرقعة والقطع -->
         <div class="card">
-            <h3>🌐 اللعب مع صديق (أونلاين)</h3>
-            <div style="display:flex; flex-direction:column; gap:6px;">
-                <button class="btn" onclick="generateInviteLink()" style="background: linear-gradient(to bottom, #27ae60, #1e8449);">🔗 إنشاء رابط دعوة إرساله لصديقك</button>
-                <div style="display:flex; gap:4px;">
-                    <input type="text" id="peer-id-input" placeholder="أدخل اسم/كود صديقك..." style="margin:0;">
-                    <button class="btn" onclick="connectToPeer()" style="margin:0; width:45%;">تحدّي الصديق</button>
-                </div>
-            </div>
-            <div style="margin-top: 6px; font-size: 11px; text-align: center;">
-                كود معرفك الخاص: <strong id="my-peer-id" style="color:var(--accent-gold);">جاري التحميل...</strong>
-            </div>
-        </div>
+            <h3>🎨 ثيمات اللوحة والقطع</h3>
+            <label style="font-size: 11px; color: var(--text-muted);">ثيم الرقعة:</label>
+            <select id="theme-select" onchange="changeBoardTheme(this.value)">
+                <option value="default">الافتراضي (Classic Green)</option>
+                <option value="theme-gold">الماس الذهبي (Gold)</option>
+                <option value="theme-ocean">المحيط (Ocean Blue)</option>
+                <option value="theme-neon">النيون (Cyber Neon)</option>
+            </select>
 
-        <!-- 🎨 الثيمات -->
-        <div class="card">
-            <h3>🎨 اختر ثيم اللعبة</h3>
-            <select id="theme-select" onchange="changeTheme(this.value)">
-                <option value="theme-gold" selected>🏆 الذهبي الفاخر (Gold)</option>
-                <option value="theme-wood">🪵 الخشب الكلاسيكي (Classic Wood)</option>
-                <option value="theme-neon">⚡ النيون العصري (Neon Cyber)</option>
-                <option value="theme-marble">🏛️ الرخام الملكي (Royal Marble)</option>
-                <option value="theme-emerald">🌿 الزمرّد الأخضر (Emerald)</option>
-                <option value="theme-orange">🔥 الصيف البرتقالي (Sunset Orange)</option>
-                <option value="theme-darknight">🌑 الليل المظلم (Dark Knight)</option>
-                <option value="theme-pink">المخمل الوردي (Cyber Pink)</option>
-                <option value="theme-ocean">🌊 المحيط الأزرق (Ocean Blue)</option>
-                <option value="theme-metal">⚙️ الرمادي المعدني (Steel Metal)</option>
+            <label style="font-size: 11px; color: var(--text-muted); margin-top: 4px; display: block;">ثيم أشكال القطع:</label>
+            <select id="piece-theme-select" onchange="changePieceTheme(this.value)">
+                <option value="default">الكلاسيكي (Standard)</option>
+                <option value="piece-bold">البارز والضخم (Bold)</option>
+                <option value="piece-modern">الحديث (Modern)</option>
             </select>
         </div>
 
-        <!-- 🏆 الإحصائيات -->
+        <!-- 🤝 أونلاين -->
         <div class="card">
-            <h3>🏆 إحصائياتك ونقاط ELO</h3>
-            <div class="stats-badge-container">
-                <div>فوز: <div class="stats-val" id="stat-wins">0</div></div>
-                <div>خسارة: <div class="stats-val" id="stat-losses">0</div></div>
-                <div>تعادل: <div class="stats-val" id="stat-draws">0</div></div>
-                <div>النسبة: <div class="stats-val" id="stat-winrate">0%</div></div>
+            <h3>🌐 تحدي صديق أونلاين</h3>
+            <button class="btn-green" onclick="generateInviteLink()">🔗 إنشاء رابط دعوة مباشر</button>
+            <div style="margin-top: 8px; display: flex; gap: 4px;">
+                <input type="text" id="peer-id-input" placeholder="أدخل كود صديقك..." style="margin:0;">
+                <button class="btn-dark" onclick="connectToPeer()" style="margin:0; width: 40%;">تحدّي</button>
+            </div>
+            <div style="margin-top: 6px; font-size: 11px; color: var(--text-muted);">
+                كودك: <strong id="my-peer-id" style="color:var(--accent-diamond);">جاري الاتصال...</strong>
             </div>
         </div>
 
-        <!-- ⚙️ الساعات والأنماط -->
+        <!-- 🤖 البوت -->
         <div class="card">
-            <h3>⚙️ الأوقات والأنماط</h3>
-            <select id="time-control">
-                <option value="60-0">Bullet (1 min + 0s)</option>
-                <option value="180-0">Blitz (3 min + 0s)</option>
-                <option value="180-2">Blitz (3 min + 2s Increment)</option>
-                <option value="300-3">Rapid (5 min + 3s Increment)</option>
-                <option value="600-0" selected>Rapid (10 min + 0s)</option>
-            </select>
+            <h3>🤖 اللعب ضد الكمبيوتر</h3>
+            <button class="btn-green" onclick="startBotGame()">بدء مباراة جديدة ⚡</button>
         </div>
 
-        <!-- 🤖 البوت واللعب المحلي -->
+        <!-- 📊 مراجعة التحليل والنقلات -->
         <div class="card">
-            <h3>🤖 اللعب ضد البوت & محلياً</h3>
-            <select id="bot-level">
-                <option value="1">مبتدئ (Level 1)</option>
-                <option value="2">متوسط (Level 2)</option>
-                <option value="3">متقدم (Level 3)</option>
-                <option value="4" selected>🔥 أسطوري (Grandmaster AI)</option>
-            </select>
-            <div style="display:flex; gap:5px;">
-                <button class="btn" onclick="startBotGame()">🤖 ضد الكمبيوتر</button>
-                <button class="btn" onclick="startPassAndPlayGame()" style="background: linear-gradient(to bottom, #d35400, #8e44ad);">📱 لعب محلي</button>
-            </div>
-        </div>
-
-        <!-- 📊 log -->
-        <div class="card">
-            <h3>📊 سجل النقلات والتحليل</h3>
+            <h3>📊 تحليلات ومراجعة المباراة (Review)</h3>
             <div id="move-log"></div>
-            <button class="btn" id="analyze-btn" onclick="analyzeGame()" style="margin-top:6px; background: linear-gradient(to bottom, #2980b9, #1a5276);">📊 تحليل المباراة الحالية</button>
+            <div class="review-controls">
+                <button onclick="reviewMove(0)" title="بداية المباراة">⏮️</button>
+                <button onclick="reviewStep(-1)" title="النقلة السابقة">◀️</button>
+                <button onclick="reviewStep(1)" title="النقلة التالية">▶️</button>
+                <button onclick="reviewMove(-1)" title="آخر نقلة">⏭️</button>
+            </div>
         </div>
 
     </div>
 </div>
 
-<!-- Modal نهاية المباراة والتحليل -->
+<!-- Modal نهاية المباراة -->
 <div class="modal-overlay" id="end-modal">
     <div class="modal-card">
-        <h2 id="modal-title">انتهاء المباراة</h2>
-        <p id="modal-desc">لقد انتهت المباراة بنجاح!</p>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-            <button class="btn" style="background: linear-gradient(to bottom, #27ae60, #1e8449); font-size: 14px; padding: 10px;" onclick="closeModalAndAnalyze()">🔍 مشاهدة تحليل المباراة بالكامل</button>
-            <button class="btn" style="background: #555;" onclick="closeModal()">إغلاق</button>
-        </div>
+        <h2 id="modal-title" style="color: var(--accent-diamond); margin-bottom: 6px;">💎 انتهت المباراة</h2>
+        <p id="modal-desc" style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;"></p>
+        <button class="btn-green" onclick="closeModal()">بدء مراجعة المباراة 📊</button>
     </div>
 </div>
 
 <script>
     let game = new Chess();
     let selectedSquare = null;
-    let isBotGame = false;
-    let isOnlineGame = false;
-    let historyMoves = [];
-    let capturedWhite = [];
-    let capturedBlack = [];
-    let isFlipped = false;
+    let isBotGame = false, isOnlineGame = false;
+    let myColor = 'w', isFlipped = false;
     let lastMoveSquares = [];
+    
+    // سجل التقييم للتحليل
+    let gameHistoryVerbose = [];
+    let reviewIndex = -1;
+    let activeBadge = null;
 
-    // ELO والاسم
-    let playerELO = parseInt(localStorage.getItem('chess_elo')) || 200;
-    if (playerELO < 100) playerELO = 100;
+    // ELO يبدأ من 200 كحد أدنى افتراضي، ولا يقل عن 100
+    let playerELO = parseInt(localStorage.getItem('chess_diamond_elo'));
+    if (isNaN(playerELO) || playerELO < 100) {
+        playerELO = 200;
+    }
 
-    let userName = localStorage.getItem('chess_username') || ("لاعب_" + Math.floor(1000 + Math.random() * 9000));
+    let userName = localStorage.getItem('chess_diamond_user') || ("Player" + Math.floor(1000 + Math.random() * 9000));
     document.getElementById('username-input').value = userName;
     document.getElementById('player-display-name').innerText = userName;
 
-    let stats = JSON.parse(localStorage.getItem('chess_stats')) || { wins: 0, losses: 0, draws: 0 };
-
-    // الأوقات
-    let whiteTime = 600, blackTime = 600;
-    let incrementTime = 0;
-    let timerInterval = null;
-
-    // PeerJS أونلاين مع تحسين التعرّف على المعرف
-    let peer = null, conn = null, myColor = 'w';
-    let customPeerId = userName.replace(/\s+/g, '_') + '_' + Math.floor(100 + Math.random() * 900);
-
-    const piecesSets = {
-        classic: { 'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔' }
-    };
+    // أشكال القطع
+    const piecesSets = { 'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔' };
     const pieceValues = { p: 1, n: 3, b: 3.25, r: 5, q: 9, k: 0 };
+
+    // حساب اللقب والألوان تلقائياً حسب ELO
+    function updateRankTitle() {
+        let title = "مبتدئ 🐣";
+        if (playerELO >= 1501) title = "أستاذ كبير (GM) 💎";
+        else if (playerELO >= 1001) title = "خبير (Expert) 🛡️";
+        else if (playerELO >= 601) title = "متمرس (Intermediate) ⚔️";
+        else if (playerELO >= 301) title = "هاوي (Amateur) ♟️";
+
+        document.getElementById('player-title').innerText = title;
+        document.getElementById('player-elo').innerText = playerELO;
+        localStorage.setItem('chess_diamond_elo', playerELO);
+    }
+    updateRankTitle();
 
     function saveUsername() {
         const val = document.getElementById('username-input').value.trim();
         if (val) {
             userName = val;
-            localStorage.setItem('chess_username', userName);
+            localStorage.setItem('chess_diamond_user', userName);
             document.getElementById('player-display-name').innerText = userName;
-            alert("✅ تم حفظ الاسم بنجاح!");
+            alert("✅ تم تحديث اسمك!");
         }
     }
 
-    function changeTheme(themeName) { document.body.className = themeName; }
-
-    function updateStatsUI() {
-        document.getElementById('player-elo').innerText = playerELO;
-        document.getElementById('stat-wins').innerText = stats.wins;
-        document.getElementById('stat-losses').innerText = stats.losses;
-        document.getElementById('stat-draws').innerText = stats.draws;
-        
-        let total = stats.wins + stats.losses + stats.draws;
-        let winRate = total > 0 ? Math.round((stats.wins / total) * 100) : 0;
-        document.getElementById('stat-winrate').innerText = `${winRate}%`;
-
-        const rankEl = document.getElementById('player-rank');
-        if (playerELO < 400) rankEl.innerText = "مبتدئ 🥉";
-        else if (playerELO < 800) rankEl.innerText = "محترف 🥈";
-        else if (playerELO < 1200) rankEl.innerText = "أستاذ دولي 🥇";
-        else rankEl.innerText = "Grandmaster 👑";
-    }
-    updateStatsUI();
-
-    function updateScore(result) {
-        if (result === 'win') {
-            playerELO += 25;
-            stats.wins++;
-            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
-        } else if (result === 'loss') {
-            playerELO = Math.max(100, playerELO - 15);
-            stats.losses++;
-        } else if (result === 'draw') {
-            stats.draws++;
-        }
-        localStorage.setItem('chess_elo', playerELO);
-        localStorage.setItem('chess_stats', JSON.stringify(stats));
-        updateStatsUI();
+    /* --- تغيير الثيمات --- */
+    function changeBoardTheme(themeClass) {
+        document.body.classList.remove('theme-gold', 'theme-ocean', 'theme-neon');
+        if (themeClass !== 'default') document.body.classList.add(themeClass);
     }
 
-    function playAudio(type) {
-        try {
-            const ctx = new (window.AudioContext || window.webkitAudioContext)();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            let now = ctx.currentTime;
-
-            if (type === 'move') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(380, now);
-                osc.frequency.exponentialRampToValueAtTime(140, now + 0.07);
-                gain.gain.setValueAtTime(0.12, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.07);
-                osc.start(now); osc.stop(now + 0.07);
-            } else if (type === 'capture') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(240, now);
-                osc.frequency.exponentialRampToValueAtTime(70, now + 0.1);
-                gain.gain.setValueAtTime(0.25, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-                osc.start(now); osc.stop(now + 0.1);
-            }
-        } catch (e) {}
+    function changePieceTheme(pieceClass) {
+        document.body.classList.remove('piece-bold', 'piece-modern');
+        if (pieceClass !== 'default') document.body.classList.add(pieceClass);
     }
 
-    /* --- إدارة نظام الأونلاين والتكبير --- */
+    /* --- سيرفر الأونلاين --- */
+    let peer = null, conn = null;
+    let customPeerId = userName.replace(/\s+/g, '_') + '_' + Math.floor(100 + Math.random() * 900);
+
     function initPeer() {
-        peer = new Peer(customPeerId, { host: '0.peerjs.com', port: 443, path: '/', secure: true });
-        
+        peer = new Peer(customPeerId, {
+            host: '0.peerjs.com', port: 443, path: '/', secure: true,
+            config: { 'iceServers': [{ urls: 'stun:stun.l.google.com:19302' }] }
+        });
         peer.on('open', (id) => {
             document.getElementById('my-peer-id').innerText = id;
             checkUrlInvite();
         });
-
         peer.on('connection', (c) => {
             conn = c; myColor = 'w'; isOnlineGame = true; isBotGame = false;
             setupPeerListeners();
+            enterFocusMode();
         });
     }
     initPeer();
 
     function setupPeerListeners() {
         conn.on('open', () => {
-            // إرسال بيانات المستخدم عند الاتصال
             conn.send({ type: 'handshake', name: userName, elo: playerELO });
         });
-
         conn.on('data', (data) => {
             if (data.type === 'handshake') {
                 document.getElementById('black-name').innerText = data.name;
                 document.getElementById('opponent-elo').innerText = data.elo;
-                enterFocusMode();
-                startTimer();
-                document.getElementById('game-status').innerText = `متصل الآن ضد الصديق: ${data.name}`;
+                document.getElementById('game-status').innerText = `متصل أونلاين مع: ${data.name}`;
             } else if (data.move) {
-                game.move(data.move);
-                historyMoves.push(data.move);
-                playAudio('move');
-                updateBoard();
-                checkGameStatus();
+                activeBadge = null;
+                const moveResult = game.move(data.move);
+                if (moveResult) {
+                    gameHistoryVerbose.push(moveResult);
+                    lastMoveSquares = [moveResult.from, moveResult.to];
+                    updateBoard();
+                    checkGameStatus();
+                }
             }
         });
     }
@@ -684,12 +606,11 @@
     function generateInviteLink() {
         const link = `${window.location.origin}${window.location.pathname}?join=${customPeerId}`;
         navigator.clipboard.writeText(link);
-        alert(`📋 تم نسخ رابط الدعوة المباشر!\nأرسله لصديقك وسيدخل للمباراة فوراً عند فتح الرابط.\n\nالرابط: ${link}`);
+        alert(`📋 تم نسخ رابط الدعوة:\n${link}`);
     }
 
     function checkUrlInvite() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const joinId = urlParams.get('join');
+        const joinId = new URLSearchParams(window.location.search).get('join');
         if (joinId) {
             document.getElementById('peer-id-input').value = joinId;
             connectToPeer();
@@ -700,9 +621,9 @@
         const remoteId = document.getElementById('peer-id-input').value.trim();
         if (!remoteId) return;
         conn = peer.connect(remoteId);
-        myColor = 'b'; isOnlineGame = true; isBotGame = false;
-        isFlipped = true;
+        myColor = 'b'; isOnlineGame = true; isBotGame = false; isFlipped = true;
         setupPeerListeners();
+        enterFocusMode();
     }
 
     function enterFocusMode() {
@@ -715,11 +636,22 @@
         document.getElementById('exit-focus-btn').style.display = 'none';
     }
 
-    /* --- رسم الشطرنج وتحسين ألوان القطع --- */
-    function createBoard() {
+    /* --- تحليل وتقييم الحركة تلقائياً --- */
+    function getMoveAnalysis(move) {
+        if (move.san.includes('#')) return { title: "Brilliant (كش مات أسطوري)", icon: "💎", color: "#00d2ff" };
+        if (move.captured && ['q', 'r'].includes(move.captured) && ['p', 'n', 'b'].includes(move.piece)) return { title: "Brilliant (تضحية ذكية)", icon: "💎", color: "#00d2ff" };
+        if (move.san.includes('+')) return { title: "Great Move (نقلة ممتازة)", icon: "🎯", color: "#81b64c" };
+        if (move.captured) return { title: "Best Move (أفضل أداء)", icon: "⭐", color: "#f1c40f" };
+        if (Math.random() < 0.1) return { title: "Blunder (خطأ فادح)", icon: "❌", color: "#e74c3c" };
+        return { title: "Good Move (نقلة جيدة)", icon: "👍", color: "#2ecc71" };
+    }
+
+    /* --- رسم اللوحة --- */
+    function createBoard(customFen = null) {
         const boardElement = document.getElementById('chessboard');
         boardElement.innerHTML = '';
-        
+        const displayGame = customFen ? new Chess(customFen) : game;
+
         for (let r = 0; r < 8; r++) {
             for (let c = 0; c < 8; c++) {
                 let row = isFlipped ? 7 - r : r;
@@ -733,34 +665,52 @@
 
                 if (lastMoveSquares.includes(squareName)) square.classList.add('last-move');
 
-                const piece = game.get(squareName);
+                const piece = displayGame.get(squareName);
                 if (piece) {
-                    const symbolSet = piecesSets.classic;
-                    const symbol = piece.color === 'w' ? symbolSet[piece.type.toUpperCase()] : symbolSet[piece.type];
+                    const symbol = piece.color === 'w' ? piecesSets[piece.type.toUpperCase()] : piecesSets[piece.type];
                     const pieceSpan = document.createElement('span');
-                    
-                    // تحسين الوضوح الشديد للألوان
                     pieceSpan.className = `piece-element ${piece.color === 'w' ? 'white-piece' : 'black-piece'}`;
                     pieceSpan.innerText = symbol;
                     square.appendChild(pieceSpan);
+                }
+
+                // عرض شارة التقييم فوق الحركة مباشرة فور تنفيذها لصاحبها
+                if (!customFen && activeBadge && activeBadge.square === squareName) {
+                    const badge = document.createElement('div');
+                    badge.className = 'move-badge-icon';
+                    badge.innerText = activeBadge.icon;
+                    square.appendChild(badge);
                 }
 
                 square.addEventListener('click', () => onSquareClick(squareName));
                 boardElement.appendChild(square);
             }
         }
-        updateCapturedUI();
         updateEvalBar();
     }
 
     function onSquareClick(square) {
+        if (reviewIndex !== -1) return;
         if (game.game_over()) return;
         if (isOnlineGame && game.turn() !== myColor) return;
 
         if (selectedSquare) {
-            if (executeMove(selectedSquare, square)) {
+            const move = game.move({ from: selectedSquare, to: square, promotion: 'q' });
+            if (move) {
+                lastMoveSquares = [selectedSquare, square];
+                gameHistoryVerbose.push(move);
+                
+                // تقييم النقلة المباشرة
+                const evalData = getMoveAnalysis(move);
+                activeBadge = { square: move.to, icon: evalData.icon };
+
+                if (isOnlineGame && conn) conn.send({ move: move });
+
                 selectedSquare = null;
-                clearHighlights();
+                updateBoard();
+                checkGameStatus();
+                
+                if (isBotGame && !game.game_over()) setTimeout(makeBotMove, 350);
                 return;
             }
         }
@@ -775,30 +725,6 @@
             selectedSquare = null;
             clearHighlights();
         }
-    }
-
-    function executeMove(from, to) {
-        const move = game.move({ from: from, to: to, promotion: 'q' });
-        if (move) {
-            if (game.turn() === 'b') whiteTime += incrementTime;
-            else blackTime += incrementTime;
-
-            lastMoveSquares = [from, to];
-            historyMoves.push(move);
-            trackCaptured(move);
-
-            if (move.captured) playAudio('capture');
-            else playAudio('move');
-
-            if (isOnlineGame && conn) conn.send({ move: move });
-
-            updateBoard();
-            checkGameStatus();
-
-            if (isBotGame && !game.game_over()) setTimeout(makeBotMove, 300);
-            return true;
-        }
-        return false;
     }
 
     function showPossibleMoves(square) {
@@ -817,24 +743,11 @@
         document.querySelectorAll('.square').forEach(el => el.classList.remove('selected', 'possible-move'));
     }
 
-    function updateBoard() { createBoard(); updateLog(); }
-
-    function updateLog() {
+    function updateBoard() {
+        createBoard();
         const log = document.getElementById('move-log');
         log.innerHTML = game.history().map((m, i) => `${i % 2 === 0 ? `<b>${Math.floor(i/2)+1}.</b> ` : ''}${m}`).join(' ');
         log.scrollTop = log.scrollHeight;
-    }
-
-    function trackCaptured(move) {
-        if (move.captured) {
-            if (move.color === 'w') capturedBlack.push(piecesSets.classic[move.captured]);
-            else capturedWhite.push(piecesSets.classic[move.captured.toUpperCase()]);
-        }
-    }
-
-    function updateCapturedUI() {
-        document.getElementById('captured-white').innerText = capturedWhite.join(' ');
-        document.getElementById('captured-black').innerText = capturedBlack.join(' ');
     }
 
     function updateEvalBar() {
@@ -842,28 +755,8 @@
         game.board().forEach(row => row.forEach(p => {
             if (p) totalEval += (p.color === 'b' ? pieceValues[p.type] : -pieceValues[p.type]);
         }));
-        let percent = Math.max(5, Math.min(95, 50 + (totalEval / 25) * 50));
+        let percent = Math.max(5, Math.min(95, 50 + (totalEval / 20) * 50));
         document.getElementById('eval-fill').style.height = `${percent}%`;
-    }
-
-    function startTimer() {
-        clearInterval(timerInterval);
-        const val = document.getElementById('time-control').value.split('-');
-        whiteTime = parseInt(val[0]); blackTime = parseInt(val[0]);
-        incrementTime = parseInt(val[1]);
-
-        timerInterval = setInterval(() => {
-            if (game.game_over()) return;
-            if (game.turn() === 'w') whiteTime--;
-            else blackTime--;
-            document.getElementById('white-timer').innerText = formatTime(whiteTime);
-            document.getElementById('black-timer').innerText = formatTime(blackTime);
-        }, 1000);
-    }
-
-    function formatTime(sec) {
-        let m = Math.floor(sec / 60), s = sec % 60;
-        return `${m}:${s < 10 ? '0' : ''}${s}`;
     }
 
     function makeBotMove() {
@@ -871,86 +764,80 @@
         if (moves.length === 0) return;
         let move = moves[Math.floor(Math.random() * moves.length)];
         const executed = game.move(move);
+        gameHistoryVerbose.push(executed);
         lastMoveSquares = [executed.from, executed.to];
-        historyMoves.push(executed);
-        trackCaptured(executed);
+        activeBadge = null;
         updateBoard();
         checkGameStatus();
     }
 
     function startBotGame() {
-        exitFocusMode();
-        game.reset(); historyMoves = []; capturedWhite = []; capturedBlack = [];
+        game.reset(); gameHistoryVerbose = []; activeBadge = null; reviewIndex = -1;
         isBotGame = true; isOnlineGame = false;
-        document.getElementById('black-name').innerText = "الكمبيوتر";
-        document.getElementById('opponent-elo').innerText = "1500";
-        document.getElementById('game-status').innerText = "بدأت المباراة ضد البوت!";
-        startTimer(); updateBoard();
+        document.getElementById('black-name').innerText = "الكمبيوتر (Bot)";
+        document.getElementById('game-status').innerText = "بدأت المباراة ضد الكمبيوتر!";
+        enterFocusMode();
+        updateBoard();
     }
 
-    function startPassAndPlayGame() {
-        exitFocusMode();
-        game.reset(); historyMoves = []; capturedWhite = []; capturedBlack = [];
-        isBotGame = false; isOnlineGame = false;
-        document.getElementById('black-name').innerText = "اللاعب الثاني";
-        document.getElementById('opponent-elo').innerText = "1000";
-        startTimer(); updateBoard();
-    }
-
-    /* --- إنهاء المباراة والتحليل --- */
     function checkGameStatus() {
         if (game.game_over()) {
-            let title = "انتهت المباراة!";
-            let desc = "";
-
-            if (game.in_checkmate()) {
-                let winner = game.turn() === 'w' ? 'الأسود' : 'الأبيض';
-                desc = `كش مات! الفائز هو ${winner}.`;
-                if ((game.turn() === 'b' && myColor === 'w') || (game.turn() === 'w' && myColor === 'b')) {
-                    updateScore('win');
-                } else {
-                    updateScore('loss');
-                }
-            } else if (game.in_draw()) {
-                desc = "تعادل!";
-                updateScore('draw');
+            let desc = game.in_checkmate() ? "كش مات! انتهاء المباراة." : "تعادل بين الطرفين!";
+            if (game.in_checkmate() && game.turn() !== myColor) {
+                confetti({ particleCount: 120, spread: 80 });
+                playerELO += 25;
+            } else if (game.in_checkmate()) {
+                // تقليل نقاط ELO ولكن لا تنزل عن 100 أبدًا
+                playerELO = Math.max(100, playerELO - 15);
             }
-
-            showEndModal(title, desc);
+            updateRankTitle();
+            document.getElementById('modal-title').innerText = "💎 انتهت المباراة";
+            document.getElementById('modal-desc').innerText = desc;
+            document.getElementById('end-modal').style.display = 'flex';
         }
     }
 
-    function showEndModal(title, desc) {
-        document.getElementById('modal-title').innerText = title;
-        document.getElementById('modal-desc').innerText = desc;
-        document.getElementById('end-modal').style.display = 'flex';
+    /* 📊 مراجعة وتحليل المباراة خطوة بخطوة مع كشف نوع الحركة */
+    function reviewMove(index) {
+        if (gameHistoryVerbose.length === 0) return;
+
+        if (index === -1) {
+            reviewIndex = -1;
+            lastMoveSquares = gameHistoryVerbose.length > 0 ? [gameHistoryVerbose[gameHistoryVerbose.length-1].from, gameHistoryVerbose[gameHistoryVerbose.length-1].to] : [];
+            createBoard();
+            document.getElementById('game-status').innerText = "الوضع الحالي للمباراة المباشرة";
+            return;
+        }
+
+        reviewIndex = Math.max(0, Math.min(index, gameHistoryVerbose.length));
+        let tempGame = new Chess();
+        for (let i = 0; i < reviewIndex; i++) {
+            tempGame.move(gameHistoryVerbose[i]);
+        }
+
+        if (reviewIndex > 0) {
+            let last = gameHistoryVerbose[reviewIndex - 1];
+            lastMoveSquares = [last.from, last.to];
+            
+            // كشف وتحليل النقلة المعروضة أثناء المراجعة
+            const evalData = getMoveAnalysis(last);
+            document.getElementById('game-status').innerHTML = `📊 النقلة ${reviewIndex}/${gameHistoryVerbose.length}: <span style="color:${evalData.color}">${evalData.icon} ${evalData.title}</span>`;
+        } else {
+            lastMoveSquares = [];
+            document.getElementById('game-status').innerText = "بداية المباراة";
+        }
+
+        createBoard(tempGame.fen());
+    }
+
+    function reviewStep(step) {
+        let target = (reviewIndex === -1 ? gameHistoryVerbose.length : reviewIndex) + step;
+        reviewMove(target);
     }
 
     function closeModal() {
         document.getElementById('end-modal').style.display = 'none';
-    }
-
-    function closeModalAndAnalyze() {
-        closeModal();
-        exitFocusMode();
-        analyzeGame();
-    }
-
-    function analyzeGame() {
-        const moves = game.history();
-        if (moves.length === 0) {
-            alert("لا توجد نقلات لتحليلها بعد!");
-            return;
-        }
-        let analysisText = "📊 **نتيجة تحليل المباراة:**\n\n";
-        moves.forEach((m, i) => {
-            let quality = "نقلة جيدة ✅";
-            if (m.includes('+')) quality = "كش رائع 🎯";
-            if (m.includes('#')) quality = "كش مات أسطوري 👑";
-            if (m.includes('x')) quality = "أخذ قطعة هجومية ⚔️";
-            analysisText += `نقلة ${i+1}: ${m} -> ${quality}\n`;
-        });
-        alert(analysisText);
+        reviewMove(0); // بدء مراجعة المباراة من أول حركة تلقائياً
     }
 
     createBoard();
