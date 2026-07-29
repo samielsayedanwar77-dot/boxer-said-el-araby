@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>بوكسر سعيد العربي | Grandmaster Edition</title>
+    <!-- مكتبة قواعد الشطرنج -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <!-- مكتبة التوصيل الأونلاين PeerJS -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <!-- مكتبة الاحتفالات Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-main: #0b0705;
+            --panel-bg: #1a0f08;
+            --border-color: #b8860b;
+            --accent-gold: #ffd700;
+            --text-light: #fdf6e3;
+            --board-dark: #b58863;
+            --board-light: #f0d9b5;
+            --highlight: rgba(255, 215, 0, 0.7);
+            --last-move: rgba(46, 204, 113, 0.6);
+            --color-brilliant: #1baca6;
+            --color-great: #5c8bb0;
+            --color-best: #96bc4b;
+            --color-inaccuracy: #f0c15c;
+            --color-blunder: #fa412d;
+        }
+
+        /* 10 ثيمات متنوعة */
+        body.theme-gold { --board-dark: #b58863; --board-light: #f0d9b5; --border-color: #b8860b; --bg-main: #0b0705; }
+        body.theme-wood { --board-dark: #8b5a2b; --board-light: #cd853f; --border-color: #d2691e; --bg-main: #140c07; }
+        body.theme-neon { --board-dark: #1f1f38; --board-light: #3a3a68; --border-color: #00e5ff; --accent-gold: #00e5ff; --bg-main: #050510; }
+        body.theme-marble { --board-dark: #708090; --board-light: #e6e6fa; --border-color: #778899; --bg-main: #0f1419; }
+        body.theme-emerald { --board-dark: #2e8b57; --board-light: #a2d9ce; --border-color: #27ae60; --bg-main: #04120a; }
+        body.theme-orange { --board-dark: #d35400; --board-light: #f5cba7; --border-color: #e67e22; --bg-main: #170800; }
+        body.theme-darknight { --board-dark: #2c3e50; --board-light: #7f8c8d; --border-color: #34495e; --bg-main: #080c10; }
+        body.theme-pink { --board-dark: #c2185b; --board-light: #f8bbd0; --border-color: #e91e63; --bg-main: #120308; }
+        body.theme-ocean { --board-dark: #1565c0; --board-light: #90caf9; --border-color: #1e88e5; --bg-main: #020b14; }
+        body.theme-metal { --board-dark: #424242; --board-light: #e0e0e0; --border-color: #9e9e9e; --bg-main: #121212; }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            touch-action: manipulation;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-light);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            max-width: 1400px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .game-panel {
+            background: linear-gradient(145deg, #1c0f08, #0e0704);
+            border: 3px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.95);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .header h1 {
+            color: var(--accent-gold);
+            font-size: 22px;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .opening-tag {
+            color: var(--accent-gold);
+            font-size: 12px;
+            margin-bottom: 8px;
+            font-style: italic;
+            background: rgba(0,0,0,0.5);
+            padding: 3px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+
+        .player-profile {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 4px 0;
+            background: #090402;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        .rank-badge {
+            background: rgba(255,215,0,0.15);
+            color: var(--accent-gold);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .clock {
+            background: #120000;
+            color: #ff3333;
+            border: 2px solid #8b0000;
+            font-family: monospace;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 2px 10px;
+            border-radius: 6px;
+        }
+
+        .clock.active {
+            color: #00ff66;
+            border-color: #00aa44;
+        }
+
+        .board-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            position: relative;
+        }
+
+        .eval-bar-container {
+            width: 16px;
+            height: 480px;
+            background: #111;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            overflow: hidden;
+        }
+
+        .eval-bar-fill {
+            width: 100%;
+            background: linear-gradient(to top, #ffffff, #ddd);
+            height: 50%;
+            transition: height 0.4s ease-in-out;
+        }
+
+        .board-container {
+            border: 10px solid var(--panel-bg);
+            border-radius: 8px;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.9);
+            position: relative;
+        }
+
+        #chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            width: 480px;
+            height: 480px;
+            user-select: none;
+            position: relative;
+        }
+
+        #arrow-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 480px;
+            height: 480px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 42px;
+            cursor: grab;
+            position: relative;
+        }
+
+        .square.white { background-color: var(--board-light); }
+        .square.black { background-color: var(--board-dark); }
+        .square.selected { background-color: var(--highlight) !important; }
+        .square.last-move { background-color: var(--last-move) !important; }
+
+        .piece-element {
+            transition: transform 0.2s ease-in-out;
+            display: inline-block;
+        }
+
+        .blindfold-piece { opacity: 0 !important; }
+
+        .square.possible-move::after {
+            content: '';
+            width: 16px;
+            height: 16px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .captured-pieces {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            min-height: 28px;
+            background: #080402;
+            padding: 2px 10px;
+            border-radius: 6px;
+            width: 100%;
+            border: 1px solid var(--border-color);
+        }
+
+        .sidebar {
+            flex: 1;
+            min-width: 330px;
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .card {
+            background: linear-gradient(145deg, #180c06, #0f0703);
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 10px 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .card h3 {
+            color: var(--accent-gold);
+            margin-bottom: 6px;
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 4px;
+            font-size: 14px;
+        }
+
+        .btn {
+            background: linear-gradient(to bottom, #a37c4c, #4a2e19);
+            color: var(--text-light);
+            border: 1px solid var(--accent-gold);
+            padding: 7px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            margin-top: 4px;
+            transition: 0.2s;
+            font-size: 12px;
+        }
+
+        .btn:hover { 
+            background: linear-gradient(to bottom, #b8860b, #6e4423);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 6px;
+            background: #090402;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            border-radius: 5px;
+            margin-bottom: 4px;
+            font-size: 12px;
+        }
+
+        #move-log {
+            height: 70px;
+            overflow-y: auto;
+            background: #090402;
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            font-family: monospace;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        .stats-badge-container {
+            display: flex;
+            justify-content: space-around;
+            background: #090402;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            font-size: 11px;
+            text-align: center;
+        }
+
+        .stats-val {
+            font-size: 14px;
+            font-weight: bold;
+            color: var(--accent-gold);
+        }
+
+        .quest-box {
+            background: rgba(255, 215, 0, 0.08);
+            border: 1px solid var(--accent-gold);
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+
+        .puzzle-box {
+            background: rgba(46, 204, 113, 0.1);
+            border: 1px solid #2ecc71;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 12px;
+        }
+
+        @media (max-width: 900px) {
+            #chessboard, #arrow-canvas { width: 304px; height: 304px; }
+            #chessboard { grid-template-columns: repeat(8, 38px); grid-template-rows: repeat(8, 38px); }
+            .square { width: 38px; height: 38px; font-size: 26px; }
+            .eval-bar-container { height: 304px; }
+            .container { padding: 5px; }
+            .game-panel { padding: 10px; }
+        }
+    </style>
+</head>
+<body class="theme-gold">
+
+<div class="container">
+    <!-- اللوحة الرئيسية -->
+    <div class="game-panel" id="main-panel">
+        <div class="header">
+            <h1>🥊 بوكسر سعيد العربي</h1>
+        </div>
+
+        <div class="opening-tag" id="opening-name">الافتتاحية: بداية المباراة</div>
+
+        <!-- الخصم -->
+        <div class="player-profile">
+            <div>الخصم: <strong id="black-name">الكمبيوتر</strong></div>
+            <div class="clock" id="black-timer">10:00</div>
+        </div>
+
+        <div class="captured-pieces">
+            <span id="captured-black"></span>
+            <span class="advantage-badge" id="adv-black"></span>
+        </div>
+
+        <div class="board-wrapper">
+            <div class="eval-bar-container">
+                <div class="eval-bar-fill" id="eval-fill"></div>
+            </div>
+
+            <div class="board-container">
+                <div id="chessboard"></div>
+                <canvas id="arrow-canvas" width="480" height="480"></canvas>
+            </div>
+        </div>
+
+        <div class="captured-pieces">
+            <span id="captured-white"></span>
+            <span class="advantage-badge" id="adv-white"></span>
+        </div>
+
+        <!-- اللاعب -->
+        <div class="player-profile">
+            <div>اللاعب: <strong id="player-display-name">أنت</strong> | الرتبة: <span class="rank-badge" id="player-rank">مبتدئ 🥉</span></div>
+            <div>ELO: <span id="player-elo" style="color:var(--accent-gold); font-weight:bold;">200</span></div>
+            <div class="clock active" id="white-timer">10:00</div>
+        </div>
+
+        <div style="margin-top: 4px; text-align: center; width: 100%;">
+            <p id="game-status" style="font-weight: bold; color: var(--accent-gold);">أهلاً بك في بوكسر سعيد العربي - اختر النمط وابدأ اللعب</p>
+        </div>
+    </div>
+
+    <!-- اللوحة الجانبية -->
+    <div class="sidebar">
+
+        <!-- 👤 الحساب والاسم -->
+        <div class="card">
+            <h3>👤 حسابك في بوكسر سعيد العربي</h3>
+            <div style="display:flex; gap:4px;">
+                <input type="text" id="username-input" placeholder="أدخل اسمك هنا..." style="margin:0;">
+                <button class="btn" onclick="saveUsername()" style="margin:0; width:35%;">حفظ</button>
+            </div>
+        </div>
+
+        <!-- 🎨 خيار الثيمات (10 ثيمات) -->
+        <div class="card">
+            <h3>🎨 اختر ثيم اللعبة والرقعة (10 ثيمات)</h3>
+            <select id="theme-select" onchange="changeTheme(this.value)">
+                <option value="theme-gold" selected>🏆 الذهبي الفاخر (Gold)</option>
+                <option value="theme-wood">🪵 الخشب الكلاسيكي (Classic Wood)</option>
+                <option value="theme-neon">⚡ النيون العصري (Neon Cyber)</option>
+                <option value="theme-marble">🏛️ الرخام الملكي (Royal Marble)</option>
+                <option value="theme-emerald">🌿 الزمرّد الأخضر (Emerald)</option>
+                <option value="theme-orange">🔥 الصيف البرتقالي (Sunset Orange)</option>
+                <option value="theme-darknight">🌑 الليل المظلم (Dark Knight)</option>
+                <option value="theme-pink">المخمل الوردي (Cyber Pink)</option>
+                <option value="theme-ocean">🌊 المحيط الأزرق (Ocean Blue)</option>
+                <option value="theme-metal">⚙️ الرمادي المعدني (Steel Metal)</option>
+            </select>
+        </div>
+
+        <!-- 🧩 قسم الألغاز المستقل -->
+        <div class="card">
+            <h3>🧩 قسم الألغاز التكتيكية (Puzzles)</h3>
+            <div class="puzzle-box">
+                <div id="puzzle-desc"><b>اللغز الحالي:</b> ابحث عن أفضل نقلة لإنجاز كش مات!</div>
+                <div style="margin-top:4px; font-size:11px; color:#2ecc71;">جائزة الحل: <b>+10 ELO</b></div>
+            </div>
+            <div style="display:flex; gap:4px; margin-top:4px;">
+                <button class="btn" onclick="loadNextPuzzle()" style="background:linear-gradient(to bottom, #27ae60, #1e8449);">🧩 لغز جديد</button>
+                <button class="btn" onclick="resetPuzzle()" style="background:linear-gradient(to bottom, #e67e22, #d35400);">🔄 إعادة اللغز</button>
+            </div>
+        </div>
+
+        <!-- 🎯 قسم المهام والتحديات -->
+        <div class="card">
+            <h3>🎯 قسم المهام اليومية (Quests)</h3>
+            <div class="quest-box">
+                <div id="current-quest-text">📌 <b>المهمة الحالية:</b> اختر مستوى البوت لتلقي المهمة!</div>
+            </div>
+            <label style="font-size:11px; display:block; margin-top:5px; color:var(--accent-gold);">
+                <input type="checkbox" id="online-quest-check" style="width:auto;"> 🌐 تفعيل وضع المهام في الأونلاين (اختياري)
+            </label>
+        </div>
+
+        <!-- 🏆 الإحصائيات -->
+        <div class="card">
+            <h3>🏆 إحصائياتك ونقاط ELO</h3>
+            <div class="stats-badge-container">
+                <div>فوز: <div class="stats-val" id="stat-wins">0</div></div>
+                <div>خسارة: <div class="stats-val" id="stat-losses">0</div></div>
+                <div>تعادل: <div class="stats-val" id="stat-draws">0</div></div>
+                <div>النسبة: <div class="stats-val" id="stat-winrate">0%</div></div>
+            </div>
+        </div>
+
+        <!-- ⚙️ الساعات والأنماط -->
+        <div class="card">
+            <h3>⚙️ الأوقات والأنماط المتقدمة</h3>
+            <select id="time-control">
+                <option value="60-0">Bullet (1 min + 0s)</option>
+                <option value="180-0">Blitz (3 min + 0s)</option>
+                <option value="180-2">Blitz (3 min + 2s Increment)</option>
+                <option value="300-3">Rapid (5 min + 3s Increment)</option>
+                <option value="600-0" selected>Rapid (10 min + 0s)</option>
+            </select>
+            
+            <div style="display:flex; gap:5px; margin-top:4px;">
+                <button class="btn" onclick="startFischer960Game()" style="background: linear-gradient(to bottom, #8e44ad, #5e2a77);">🎲 شطرنج فايشر 960</button>
+                <button class="btn" id="blindfold-btn" onclick="toggleBlindfold()" style="background: linear-gradient(to bottom, #7f8c8d, #34495e);">🙈 الوضع الأعمى</button>
+            </div>
+        </div>
+
+        <!-- 🤖 البوت واللعب المحلي -->
+        <div class="card">
+            <h3>🤖 اللعب ضد البوت & محلياً</h3>
+            <select id="bot-level" onchange="generateBotQuest()">
+                <option value="1">مبتدئ (Level 1)</option>
+                <option value="2">متوسط (Level 2)</option>
+                <option value="3">متقدم (Level 3)</option>
+                <option value="4" selected>🔥 أسطوري (Grandmaster AI)</option>
+            </select>
+            <div style="display:flex; gap:5px;">
+                <button class="btn" onclick="startBotGame()">🤖 ضد الكمبيوتر</button>
+                <button class="btn" onclick="startPassAndPlayGame()" style="background: linear-gradient(to bottom, #d35400, #8e44ad);">📱 لعب محلي</button>
+            </div>
+        </div>
+
+        <!-- 🌐 الأونلاين (PeerJS) -->
+        <div class="card">
+            <h3>🌐 اللعب أونلاين ضد صديق</h3>
+            <div style="display:flex; gap:4px; margin-bottom:4px;">
+                <input type="text" id="peer-id-input" placeholder="أدخل كود صديقك..." style="margin:0;">
+                <button class="btn" onclick="connectToPeer()" style="margin:0; width:45%;">اتصال بالمنافس</button>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <p style="font-size:10px;">كودك: <strong id="my-peer-id" style="color:var(--accent-gold);">جاري الاتصال...</strong></p>
+                <button onclick="copyMyId()" style="font-size:10px; padding:2px 6px; background:#333; color:#fff; border:1px solid #777; border-radius:3px; cursor:pointer;">📋 نسخ الكود</button>
+            </div>
+        </div>
+
+        <!-- 📜 PGN & FEN Tools -->
+        <div class="card">
+            <h3>📜 تصدير PGN واستيراد FEN</h3>
+            <div style="display:flex; gap:4px;">
+                <button class="btn" onclick="exportPGN()" style="margin:0;">📋 نسخ PGN</button>
+                <button class="btn" onclick="importFEN()" style="margin:0; background:linear-gradient(to bottom, #27ae60, #1e8449);">📥 تحميل FEN</button>
+            </div>
+        </div>
+
+        <!-- الإعدادات -->
+        <div class="card">
+            <h3>⚙️ تحكم اللعبة والمظهر</h3>
+            <label style="font-size:11px; display:block; color:var(--accent-gold);">
+                <input type="checkbox" id="voice-enable-check" checked style="width:auto;"> 🔊 المعلق الصوتي (English Voice)
+            </label>
+            <div style="display:flex; gap:5px; margin-top:6px;">
+                <button class="btn" onclick="undoMove()">↩️ تراجع</button>
+                <button class="btn" onclick="flipBoard()">🔄 قلب الرقعة</button>
+            </div>
+        </div>
+
+        <!-- 📊 log -->
+        <div class="card">
+            <h3>📊 سجل النقلات</h3>
+            <div id="move-log"></div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    let game = new Chess();
+    let selectedSquare = null;
+    let isBotGame = false;
+    let isOnlineGame = false;
+    let isPuzzleMode = false;
+    let botLevel = 4;
+    let historyMoves = [];
+    let capturedWhite = [];
+    let capturedBlack = [];
+    let isFlipped = false;
+    let lastMoveSquares = [];
+    let isBlindfold = false;
+
+    // ELO يبدأ من 200 وحد أدنى 100
+    let playerELO = parseInt(localStorage.getItem('chess_elo')) || 200;
+    if (playerELO < 100) playerELO = 100;
+
+    let userName = localStorage.getItem('chess_username') || "لاعب بوكسر";
+    document.getElementById('username-input').value = userName;
+    document.getElementById('player-display-name').innerText = userName;
+
+    let stats = JSON.parse(localStorage.getItem('chess_stats')) || { wins: 0, losses: 0, draws: 0 };
+
+    // الوقت والزيادة الزمنية
+    let whiteTime = 600, blackTime = 600;
+    let incrementTime = 0;
+    let timerInterval = null;
+
+    // PeerJS أونلاين
+    let peer = null, conn = null, myColor = 'w';
+
+    // الألغاز
+    const puzzleDatabase = [
+        { fen: "r1bqkb1r/pppp1ppp/2n2n2/4p3/2B1P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 4 4", solution: ["c4f7"], desc: "لغز 1: هجوم تكتيكي مباشر على المربع f7!" },
+        { fen: "6k1/5ppp/8/8/8/8/8/1R4K1 w - - 0 1", solution: ["b1b8"], desc: "لغز 2: أنجز كش مات في الصف الخلفي (Back Rank Mate)!" },
+        { fen: "r1b2rk1/pp3ppp/2n5/1B1p4/3P1B2/8/PP3PPP/R4RK1 w - - 0 1", solution: ["b5c6"], desc: "لغز 3: اخصم قطعة الحصان وكثّف الضغط!" }
+    ];
+    let currentPuzzleIndex = 0;
+
+    // المهام
+    let currentQuestType = "";
+
+    const piecesSets = {
+        classic: { 'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔' }
+    };
+    const pieceValues = { p: 1, n: 3, b: 3.25, r: 5, q: 9, k: 0 };
+
+    function saveUsername() {
+        const val = document.getElementById('username-input').value.trim();
+        if (val) {
+            userName = val;
+            localStorage.setItem('chess_username', userName);
+            document.getElementById('player-display-name').innerText = userName;
+            alert("✅ تم حفظ الاسم بنجاح!");
+        }
+    }
+
+    function changeTheme(themeName) {
+        document.body.className = themeName;
+    }
+
+    function updateStatsUI() {
+        document.getElementById('player-elo').innerText = playerELO;
+        document.getElementById('stat-wins').innerText = stats.wins;
+        document.getElementById('stat-losses').innerText = stats.losses;
+        document.getElementById('stat-draws').innerText = stats.draws;
+        
+        let total = stats.wins + stats.losses + stats.draws;
+        let winRate = total > 0 ? Math.round((stats.wins / total) * 100) : 0;
+        document.getElementById('stat-winrate').innerText = `${winRate}%`;
+
+        const rankEl = document.getElementById('player-rank');
+        if (playerELO < 400) rankEl.innerText = "مبتدئ 🥉";
+        else if (playerELO < 800) rankEl.innerText = "محترف 🥈";
+        else if (playerELO < 1200) rankEl.innerText = "أستاذ دولي 🥇";
+        else rankEl.innerText = "Grandmaster 👑";
+    }
+    updateStatsUI();
+
+    function updateScore(result) {
+        if (result === 'win') {
+            playerELO += 25;
+            stats.wins++;
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        } else if (result === 'loss') {
+            playerELO = Math.max(100, playerELO - 15);
+            stats.losses++;
+        } else if (result === 'draw') {
+            stats.draws++;
+        }
+        localStorage.setItem('chess_elo', playerELO);
+        localStorage.setItem('chess_stats', JSON.stringify(stats));
+        updateStatsUI();
+    }
+
+    function speakEnglish(text) {
+        if (!document.getElementById('voice-enable-check').checked) return;
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'en-US';
+            utterance.rate = 1.0;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function playAudio(type) {
+        try {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain); gain.connect(ctx.destination);
+            let now = ctx.currentTime;
+
+            if (type === 'move') {
+                osc.type = 'sine'; osc.frequency.setValueAtTime(380, now);
+                osc.frequency.exponentialRampToValueAtTime(140, now + 0.07);
+                gain.gain.setValueAtTime(0.12, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.07);
+                osc.start(now); osc.stop(now + 0.07);
+            } else if (type === 'capture') {
+                osc.type = 'triangle'; osc.frequency.setValueAtTime(240, now);
+                osc.frequency.exponentialRampToValueAtTime(70, now + 0.1);
+                gain.gain.setValueAtTime(0.25, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            }
+        } catch (e) {}
+    }
+
+    /* 🧩 نظام الألغاز */
+    function loadNextPuzzle() {
+        isPuzzleMode = true;
+        isBotGame = false; isOnlineGame = false;
+        const p = puzzleDatabase[currentPuzzleIndex];
+        game.load(p.fen);
+        document.getElementById('puzzle-desc').innerHTML = `<b>اللغز الحالي:</b> ${p.desc}`;
+        document.getElementById('game-status').innerText = "وضع الألغاز: اعثر على الحركة الصحيحة!";
+        updateBoard();
+    }
+
+    function resetPuzzle() {
+        if (isPuzzleMode) game.load(puzzleDatabase[currentPuzzleIndex].fen);
+        updateBoard();
+    }
+
+    /* 🎯 نظام المهام بناءً على مستوى البوت */
+    function generateBotQuest() {
+        botLevel = parseInt(document.getElementById('bot-level').value);
+        const qBox = document.getElementById('current-quest-text');
+        
+        if (botLevel === 1) {
+            currentQuestType = "no_queen_loss";
+            qBox.innerHTML = "📌 <b>مهمة المبتدئ:</b> الفوز بالمباراة دون خسارة الوزير الخاص بك!";
+        } else if (botLevel === 2) {
+            currentQuestType = "fast_win";
+            qBox.innerHTML = "📌 <b>مهمة المتوسط:</b> تحقيق الفوز في أقل من 30 نقلة!";
+        } else if (botLevel === 3) {
+            currentQuestType = "knight_checkmate";
+            qBox.innerHTML = "📌 <b>مهمة المتقدم:</b> كش مات باستخدام الحصان أو القلعة!";
+        } else {
+            currentQuestType = "win_gm";
+            qBox.innerHTML = "📌 <b>مهمة الأسطوري:</b> هزيمة البوت الأسطوري وحصد +25 ELO!";
+        }
+    }
+    generateBotQuest();
+
+    function checkQuestCompletion() {
+        if (!isBotGame && !document.getElementById('online-quest-check').checked) return;
+
+        let questDone = false;
+        if (currentQuestType === "no_queen_loss") {
+            const hasQueen = capturedWhite.indexOf('♕') === -1;
+            if (hasQueen) questDone = true;
+        } else if (currentQuestType === "fast_win") {
+            if (historyMoves.length <= 60) questDone = true;
+        } else {
+            questDone = true;
+        }
+
+        if (questDone) {
+            alert("🎉 مبروك! لقد أكملت المهمة بنجاح وحصلت على +15 ELO إضافية!");
+            playerELO += 15;
+            localStorage.setItem('chess_elo', playerELO);
+            updateStatsUI();
+        }
+    }
+
+    function toggleBlindfold() {
+        isBlindfold = !isBlindfold;
+        document.getElementById('blindfold-btn').innerText = isBlindfold ? "👁️ إظهار القطع" : "🙈 الوضع الأعمى";
+        updateBoard();
+    }
+
+    function exportPGN() {
+        navigator.clipboard.writeText(game.pgn() || "لا يوجد نقلات بعد.");
+        alert("📋 تم نسخ الـ PGN بنجاح!");
+    }
+
+    function importFEN() {
+        const fen = prompt("أدخل كود FEN:");
+        if (fen && game.load(fen)) { updateBoard(); alert("✅ تم تحميل FEN!"); }
+    }
+
+    function startFischer960Game() {
+        isPuzzleMode = false;
+        const pieces = ['r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'];
+        for (let i = pieces.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
+        }
+        const back = pieces.join('');
+        game.load(`${back}/pppppppp/8/8/8/8/PPPPPPPP/${back.toUpperCase()} w KQkq - 0 1`);
+        historyMoves = []; capturedWhite = []; capturedBlack = [];
+        startTimer(); updateBoard();
+    }
+
+    function initPeer() {
+        peer = new Peer(null, { host: '0.peerjs.com', port: 443, path: '/', secure: true });
+        peer.on('open', (id) => document.getElementById('my-peer-id').innerText = id);
+        peer.on('connection', (c) => {
+            conn = c; myColor = 'w'; isOnlineGame = true; isBotGame = false; isPuzzleMode = false;
+            setupPeerListeners();
+            alert('🤝 تم الاتصال! تلعب بالأبيض.');
+            startTimer();
+        });
+    }
+    initPeer();
+
+    function connectToPeer() {
+        const remoteId = document.getElementById('peer-id-input').value.trim();
+        if (!remoteId) return;
+        conn = peer.connect(remoteId);
+        myColor = 'b'; isOnlineGame = true; isBotGame = false; isPuzzleMode = false;
+        setupPeerListeners();
+        alert('🤝 جاري الاتصال... تلعب بالأسود.');
+        startTimer();
+    }
+
+    function copyMyId() {
+        navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText);
+        alert('📋 تم نسخ الكود!');
+    }
+
+    function setupPeerListeners() {
+        conn.on('data', (data) => {
+            if (data.move) {
+                game.move(data.move);
+                historyMoves.push(data.move);
+                playAudio('move');
+                updateBoard();
+                checkGameStatus();
+            }
+        });
+    }
+
+    function createBoard() {
+        const boardElement = document.getElementById('chessboard');
+        boardElement.innerHTML = '';
+        
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                let row = isFlipped ? 7 - r : r;
+                let col = isFlipped ? 7 - c : c;
+                const squareName = String.fromCharCode(97 + col) + (8 - row);
+                const isWhite = (row + col) % 2 === 0;
+
+                const square = document.createElement('div');
+                square.className = `square ${isWhite ? 'white' : 'black'}`;
+                square.dataset.square = squareName;
+
+                if (lastMoveSquares.includes(squareName)) square.classList.add('last-move');
+
+                const piece = game.get(squareName);
+                if (piece) {
+                    const symbolSet = piecesSets.classic;
+                    const symbol = piece.color === 'w' ? symbolSet[piece.type.toUpperCase()] : symbolSet[piece.type];
+                    const pieceSpan = document.createElement('span');
+                    pieceSpan.className = `piece-element ${isBlindfold ? 'blindfold-piece' : ''}`;
+                    pieceSpan.style.color = piece.color === 'w' ? '#fff' : '#000';
+                    pieceSpan.style.textShadow = piece.color === 'w' ? '0 0 4px #000' : '0 0 3px #fff';
+                    pieceSpan.innerText = symbol;
+                    square.appendChild(pieceSpan);
+                }
+
+                square.addEventListener('click', () => onSquareClick(squareName));
+                boardElement.appendChild(square);
+            }
+        }
+        updateCapturedUI();
+        updateEvalBar();
+    }
+
+    function onSquareClick(square) {
+        if (game.game_over()) return;
+        if (isOnlineGame && game.turn() !== myColor) return;
+
+        if (selectedSquare) {
+            if (executeMove(selectedSquare, square)) {
+                selectedSquare = null;
+                clearHighlights();
+                return;
+            }
+        }
+
+        const piece = game.get(square);
+        if (piece && piece.color === game.turn()) {
+            selectedSquare = square;
+            clearHighlights();
+            highlightSquare(square);
+            showPossibleMoves(square);
+        } else {
+            selectedSquare = null;
+            clearHighlights();
+        }
+    }
+
+    function executeMove(from, to) {
+        const move = game.move({ from: from, to: to, promotion: 'q' });
+        if (move) {
+            if (isPuzzleMode) {
+                const puzzle = puzzleDatabase[currentPuzzleIndex];
+                if (puzzle.solution.includes(from + to)) {
+                    alert("🎉 إجابة صحيحة! تم حل اللغز (+10 ELO)");
+                    playerELO += 10;
+                    localStorage.setItem('chess_elo', playerELO);
+                    updateStatsUI();
+                    currentPuzzleIndex = (currentPuzzleIndex + 1) % puzzleDatabase.length;
+                    loadNextPuzzle();
+                } else {
+                    alert("❌ نقلة خاطئة! حاول مرة أخرى.");
+                    resetPuzzle();
+                }
+                return true;
+            }
+
+            if (game.turn() === 'b') whiteTime += incrementTime;
+            else blackTime += incrementTime;
+
+            lastMoveSquares = [from, to];
+            historyMoves.push(move);
+            trackCaptured(move);
+
+            if (game.in_check()) speakEnglish("Check!");
+            else if (move.captured) playAudio('capture');
+            else playAudio('move');
+
+            if (isOnlineGame && conn) conn.send({ move: move });
+
+            updateBoard();
+            checkGameStatus();
+
+            if (isBotGame && !game.game_over()) setTimeout(makeLegendaryBotMove, 300);
+            return true;
+        }
+        return false;
+    }
+
+    function showPossibleMoves(square) {
+        game.moves({ square: square, verbose: true }).forEach(m => {
+            const el = document.querySelector(`[data-square="${m.to}"]`);
+            if (el) el.classList.add('possible-move');
+        });
+    }
+
+    function highlightSquare(square) {
+        const el = document.querySelector(`[data-square="${square}"]`);
+        if (el) el.classList.add('selected');
+    }
+
+    function clearHighlights() {
+        document.querySelectorAll('.square').forEach(el => el.classList.remove('selected', 'possible-move'));
+    }
+
+    function updateBoard() { createBoard(); updateLog(); }
+
+    function updateLog() {
+        const log = document.getElementById('move-log');
+        log.innerHTML = game.history().map((m, i) => `${i % 2 === 0 ? `<b>${Math.floor(i/2)+1}.</b> ` : ''}${m}`).join(' ');
+        log.scrollTop = log.scrollHeight;
+    }
+
+    function trackCaptured(move) {
+        if (move.captured) {
+            if (move.color === 'w') capturedBlack.push(piecesSets.classic[move.captured]);
+            else capturedWhite.push(piecesSets.classic[move.captured.toUpperCase()]);
+        }
+    }
+
+    function updateCapturedUI() {
+        document.getElementById('captured-white').innerText = capturedWhite.join(' ');
+        document.getElementById('captured-black').innerText = capturedBlack.join(' ');
+    }
+
+    function updateEvalBar() {
+        let totalEval = 0;
+        game.board().forEach(row => row.forEach(p => {
+            if (p) totalEval += (p.color === 'b' ? pieceValues[p.type] : -pieceValues[p.type]);
+        }));
+        let percent = Math.max(5, Math.min(95, 50 + (totalEval / 25) * 50));
+        document.getElementById('eval-fill').style.height = `${percent}%`;
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        const val = document.getElementById('time-control').value.split('-');
+        whiteTime = parseInt(val[0]); blackTime = parseInt(val[0]);
+        incrementTime = parseInt(val[1]);
+
+        timerInterval = setInterval(() => {
+            if (game.game_over()) return;
+            if (game.turn() === 'w') whiteTime--;
+            else blackTime--;
+            document.getElementById('white-timer').innerText = formatTime(whiteTime);
+            document.getElementById('black-timer').innerText = formatTime(blackTime);
+        }, 1000);
+    }
+
+    function formatTime(sec) {
+        let m = Math.floor(sec / 60), s = sec % 60;
+        return `${m}:${s < 10 ? '0' : ''}${s}`;
+    }
+
+    function makeLegendaryBotMove() {
+        let moves = game.moves({ verbose: true });
+        if (moves.length === 0) return;
+        let move = moves[Math.floor(Math.random() * moves.length)];
+        const executed = game.move(move);
+        lastMoveSquares = [executed.from, executed.to];
+        historyMoves.push(executed);
+        trackCaptured(executed);
+        updateBoard();
+        checkGameStatus();
+    }
+
+    function startBotGame() {
+        isPuzzleMode = false;
+        game.reset(); historyMoves = []; capturedWhite = []; capturedBlack = [];
+        isBotGame = true; isOnlineGame = false;
+        document.getElementById('black-name').innerText = "الكمبيوتر";
+        document.getElementById('game-status').innerText = "بدأت المباراة ضد البوت!";
+        generateBotQuest();
+        startTimer(); updateBoard();
+    }
+
+    function startPassAndPlayGame() {
+        isPuzzleMode = false;
+        game.reset(); historyMoves = []; capturedWhite = []; capturedBlack = [];
+        isBotGame = false; isOnlineGame = false;
+        document.getElementById('black-name').innerText = "اللاعب الثاني";
+        startTimer(); updateBoard();
+    }
+
+    function flipBoard() { isFlipped = !isFlipped; updateBoard(); }
+    function undoMove() { game.undo(); if(isBotGame) game.undo(); updateBoard(); }
+
+    function checkGameStatus() {
+        const statusEl = document.getElementById('game-status');
+        if (game.in_checkmate()) {
+            let winner = game.turn() === 'w' ? 'الأسود' : 'الأبيض';
+            statusEl.innerText = `كش مات! الفائز: ${winner} 🏆`;
+            speakEnglish("Checkmate!");
+            if ((game.turn() === 'b' && !isFlipped) || (game.turn() === 'w' && isFlipped)) {
+                updateScore('win');
+                checkQuestCompletion();
+            } else {
+                updateScore('loss');
+            }
+        }
+    }
+
+    createBoard();
+</script>
+</body>
+</html>
